@@ -1,7 +1,4 @@
-*data/
 *.pyc
-*.ipynbcheckpoints/
-*__pycache__/
-*.ipynbcheckpoints
+*.ipynb_checkpoints/
 *__pycache__/
 *waldo_found/
