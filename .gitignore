@@ -2,3 +2,6 @@
 *.pyc
 *.ipynbcheckpoints/
 *__pycache__/
+*.ipynbcheckpoints
+*__pycache__/
+*waldo_found/
