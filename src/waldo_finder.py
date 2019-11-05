@@ -31,19 +31,20 @@ class WaldoFinder():
 		self.scale=None
 		self.resize_window=False
 		self.rescale_check()
+		self.img_name = os.path.split(self.imgpath)[1].strip('.jpg')
 
 	def rescale_check(self):
-		if self.keras_img.shape[0]>=3000:
+		if self.img.shape[1]>=3000:
 			self.rescale_image(.4)
-		if 3000>self.keras_img.shape[0]>=2750:
+		if 3000>self.img.shape[1]>=2750:
 			self.rescale_image(.45)
-		if 2750>self.keras_img.shape[0]>=2500:
+		if 2750>self.img.shape[1]>=2500:
 			self.rescale_image(.5)
-		if 2500>self.keras_img.shape[0]>=2250:
+		if 2500>self.img.shape[1]>=2250:
 			self.rescale_image(.55)
-		if 2250>self.keras_img.shape[0]>=2000:
+		if 2250>self.img.shape[1]>=2000:
 			self.rescale_image(.6)
-		if 2000>self.keras_img.shape[0]>=1700:
+		if 2000>self.img.shape[1]>=1700:
 			self.rescale_image(.7)
 
 	def rescale_image(self, scale):
@@ -90,6 +91,7 @@ class WaldoFinder():
 
 	def load_model(self,modelpath):
 		self.model=load_model(modelpath)
+		self.model_name=os.path.split(modelpath)[1].strip('.h5')
 
 	def find_waldo(self,stepsize,windowsize=(64,64), savedir=None):
 		if self.model:
@@ -126,19 +128,19 @@ class WaldoFinder():
 						keras_window=resize(keras_window,(64,64))
 					window_gen=ImageDataGenerator(rescale=1./255).flow(np.array([keras_window]))
 					prediction=self.model.predict(window_gen)[0][0]
-					predictionr=round(self.model.predict(window_gen)[0][0],3)
+					predictionr=str(round(self.model.predict(window_gen)[0][0],3))
 				print(predictionr)
 				clone = img.copy()
 				if savedir:
-					if prediction>.80:
-						cv2.rectangle(clone, (x, y), (x + winW, y + winH), (0, 255, 0), 5)
+					if prediction>.50:
+						cv2.rectangle(clone, (x, y), (x + winW, y + winH), (0, 255, 0), 3)
 						cv2.putText(clone, text=f'Waldo!{predictionr}', org=(x,y),
-									fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=1, color=(0,255,0),thickness=3)
+									fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=self.scale, color=(0,255,0),thickness=2)
 						cv2.imshow("Window", clone)
-						io.imsave(savedir+f'/window{p}.jpg',keras_window.astype('uint8'))
+						io.imsave(savedir+f'/window{p}_{self.img_name}_{self.model_name}.jpg',keras_window.astype('uint8'))
 						print(f'Found Waldo at {x},{y}')
 						cordlist.append((x,y))
-						problist.append((predictionr))
+						problist.append(predictionr)
 						p+=1
 					else:
 						cv2.rectangle(clone, (x, y), (x + winW, y + winH), (0, 0, 0), 2)
@@ -147,15 +149,20 @@ class WaldoFinder():
 		print(f"Found waldo {p} times!")
 		final=img.copy()
 		for cord,prob in zip(cordlist,problist):
-			cv2.rectangle(final, cord, (cord[0] + winW, cord[1] + winH), (0, 255, 0), 3)
-			cv2.putText(clone, text=f'Waldo!{prob}', org=cord,
-						fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=1, color=(0,255,0),thickness=2)
-		fn = os.path.split(self.imgpath)[1]
-		cv2.imshow('img',final)
-		cv2.imwrite(savedir+f'/{p}_waldos_{fn}.jpg',final)
+			cv2.rectangle(final, cord, (cord[0] + winW, cord[1] + winH), (0, 255, 0), 2)
+			cv2.putText(final, text=f'Waldo!{prob}', org=cord,
+						fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=self.scale, color=(0,255,0),thickness=1)
+
+		cv2.imshow('final',final)
+		cv2.imwrite(savedir+f'/{p}_waldos_{self.img_name}_{self.model_name}.jpg',final)
 
 if __name__ == "__main__":
-	waldofind = WaldoFinder(IMGTESTpath)
 	# waldofind.test_sliding_window((64,64),128,resized=True,savedir=GIFpath)
-	waldofind.load_model(os.path.join(MODELpath,'model_v1.h5'))
-	waldofind.find_waldo(20,(50,50),FOUNDWALDOpath)
+	testinglst=['test4.jpg','test5.jpg','test6.jpg']
+	# ['test1.jpg','test2.jpg','test3.jpg']
+	for imgname in testinglst:
+		imgpath=os.path.join(IMGSpath,imgname)
+		waldofind = WaldoFinder(imgpath)
+		waldofind.load_model(os.path.join(MODELpath,'model_v2.h5'))
+		waldofind.find_waldo(20,(50,50),FOUNDWALDOpath)
+
