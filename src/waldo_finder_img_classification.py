@@ -43,13 +43,13 @@ class WaldoFinder():
 		the image to a more reasonable size'''
 
 		if self.img.shape[1]>=3000:
-			self.rescale_image(.45)
+			self.rescale_image(.5)
 		if 3000>self.img.shape[1]>=2750:
-			self.rescale_image(.50)
-		if 2750>self.img.shape[1]>=2500:
 			self.rescale_image(.55)
-		if 2500>self.img.shape[1]>=2250:
+		if 2750>self.img.shape[1]>=2500:
 			self.rescale_image(.6)
+		if 2500>self.img.shape[1]>=2250:
+			self.rescale_image(.65)
 		if 2250>self.img.shape[1]>=2000:
 			self.rescale_image(.7)
 		if 2000>self.img.shape[1]>=1700:
@@ -134,14 +134,14 @@ class WaldoFinder():
 						keras_window=resize(keras_window,(64,64))
 					window_gen=ImageDataGenerator(rescale=1./255).flow(np.array([keras_window],dtype='float32'))
 					prediction=self.model.predict(window_gen)[0][0]
-					predictionr=round(self.model.predict(window_gen)[0][0],3)
+					predictionr=round(float(self.model.predict(window_gen)[0][0]),3)
 				else:
 					keras_window=self.keras_img[y:y + winH, x:x + winW]
 					if self.resize_window:
 						keras_window=resize(keras_window,(64,64))
 					window_gen=ImageDataGenerator(rescale=1./255).flow(np.array([keras_window]))
 					prediction=self.model.predict(window_gen)[0][0]
-					predictionr=str(round(self.model.predict(window_gen)[0][0],3))
+					predictionr=round(float(self.model.predict(window_gen)[0][0]),3)
 				print(predictionr)
 				clone = img.copy()
 				if savedir:
@@ -150,7 +150,7 @@ class WaldoFinder():
 						cv2.putText(clone, text=f'Waldo!{predictionr}', org=(x,y),
 									fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=self.scale, color=(0,255,0),thickness=2)
 						cv2.imshow("Window", clone)
-						io.imsave(savedir+f'/window{p}_{self.img_name}_{self.model_name}.jpg',keras_window.astype('uint8'))
+						# io.imsave(savedir+f'/window{p}_{self.img_name}_{self.model_name}.jpg',keras_window.astype('uint8'))
 						print(f'Found Waldo at {x},{y}')
 						cordlist.append((x,y))
 						problist.append(predictionr)
@@ -177,9 +177,9 @@ if __name__ == "__main__":
 	holdoutlst2 = ['holdout4.jpg','holdout5.jpg','holdout6.jpg']
 	holdoutlst3 = ['holdout7.jpg','holdout8.jpg','holdout9.jpg']
 
-	for imgname in holdoutlst1:
+	for imgname in testinglst1:
 		imgpath=os.path.join(IMGSpath,imgname)
 		waldofind = WaldoFinder(imgpath)
-		waldofind.load_model(os.path.join(MODELpath,'model_v2.h5'))
+		waldofind.load_model(os.path.join(MODELpath,'model_v3.h5'))
 		waldofind.find_waldo(20,(50,50),FOUNDWALDOpath)
 
