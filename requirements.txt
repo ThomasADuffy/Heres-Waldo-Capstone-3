@@ -1,0 +1,10 @@
+Flask
+request
+numpy
+sklearn
+requests
+socket
+time
+datetime
+collections
+pymongo

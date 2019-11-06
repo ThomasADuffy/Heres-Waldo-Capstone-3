@@ -21,6 +21,11 @@ FOUNDWALDOpath=os.path.join(IMGSpath,'waldo_found')
 
 class WaldoFinder():
 
+	''' This class will scan through and image and apply a model(in .h5 format)
+	to classify each window set by a bounding box. It automatically rescales the image if they are over
+	1700 pixels wide to a smaller size for speed reasons. The default box is 64,64 but any box can be used.
+	it will resize the window to 64 by 64 to pass into the model because that is what these models are trained on.
+	'''
 	def __init__(self,imgpath):
 
 		self.imgpath=imgpath
@@ -34,27 +39,35 @@ class WaldoFinder():
 		self.img_name = os.path.split(self.imgpath)[1].strip('.jpg')
 
 	def rescale_check(self):
+		''' This will check how big the image is and see if it needs to rescale
+		the image to a more reasonable size'''
+
 		if self.img.shape[1]>=3000:
-			self.rescale_image(.4)
-		if 3000>self.img.shape[1]>=2750:
 			self.rescale_image(.45)
+		if 3000>self.img.shape[1]>=2750:
+			self.rescale_image(.50)
 		if 2750>self.img.shape[1]>=2500:
-			self.rescale_image(.5)
-		if 2500>self.img.shape[1]>=2250:
 			self.rescale_image(.55)
-		if 2250>self.img.shape[1]>=2000:
+		if 2500>self.img.shape[1]>=2250:
 			self.rescale_image(.6)
-		if 2000>self.img.shape[1]>=1700:
+		if 2250>self.img.shape[1]>=2000:
 			self.rescale_image(.7)
+		if 2000>self.img.shape[1]>=1700:
+			self.rescale_image(.8)
 
 	def rescale_image(self, scale):
+		''' this will automatically rescale the image to the fraction set by
+		the scale metric'''
+
 		w = int(self.img.shape[1] * scale)
 		self.img_resized = imutils.resize(self.img, width=w)
 		self.keras_img_resized = rescale(self.keras_img ,scale,anti_aliasing=False)
 		self.resized = True
 		self.scale = scale
 
-	def sliding_window(self, image, stepSize, windowSize):
+	def __sliding_window(self, image, stepSize, windowSize):
+		'''This is the sliding window which goes across the image it just increments
+		the y and x at the size of the windowSize, This is a helper function do not use!'''
 		if self.resized:
 		# slide a window across the image
 			for y in range(0, self.img_resized.shape[0], stepSize):
@@ -70,7 +83,7 @@ class WaldoFinder():
 
 	
 
-	def test_sliding_window(self,windowsize,stepsize, savedir=None):
+	def _test_sliding_window(self,windowsize,stepsize, savedir=None):
 		p=0
 		(winW, winH) = windowsize
 		if self.resized:
@@ -111,7 +124,7 @@ class WaldoFinder():
 			self.resize_window=True
 		cordlist=[]
 		problist=[]
-		for (x, y, window) in self.sliding_window(img, stepSize=stepsize, windowSize=(winW, winH)):
+		for (x, y, window) in self.__sliding_window(img, stepSize=stepsize, windowSize=(winW, winH)):
 				# if the window does not meet our desired window size, ignore it
 				if window.shape[0] != winH or window.shape[1] != winW:
 					continue
@@ -151,22 +164,22 @@ class WaldoFinder():
 		for cord,prob in zip(cordlist,problist):
 			cv2.rectangle(final, cord, (cord[0] + winW, cord[1] + winH), (0, 255, 0), 2)
 			cv2.putText(final, text=f'Waldo!{prob}', org=cord,
-						fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=self.scale, color=(0,255,0),thickness=1)
+						fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=self.scale, color=(0,255,0),thickness=2)
 
 		cv2.imshow('final',final)
 		cv2.imwrite(savedir+f'/{p}_waldos_{self.img_name}_{self.model_name}.jpg',final)
 
 if __name__ == "__main__":
-	# waldofind.test_sliding_window((64,64),128,resized=True,savedir=GIFpath)
+	# waldofind._test_sliding_window((64,64),128,resized=True,savedir=GIFpath)
 	testinglst1 = ['test4.jpg','test5.jpg','test6.jpg']
 	testinglst2 = ['test1.jpg','test2.jpg','test3.jpg']
 	holdoutlst1 = ['holdout1.jpg','holdout2.jpg','holdout3.jpg']
 	holdoutlst2 = ['holdout4.jpg','holdout5.jpg','holdout6.jpg']
 	holdoutlst3 = ['holdout7.jpg','holdout8.jpg','holdout9.jpg']
 
-	for imgname in testinglst1:
+	for imgname in holdoutlst1:
 		imgpath=os.path.join(IMGSpath,imgname)
 		waldofind = WaldoFinder(imgpath)
-		waldofind.load_model(os.path.join(MODELpath,'model_v4.h5'))
+		waldofind.load_model(os.path.join(MODELpath,'model_v2.h5'))
 		waldofind.find_waldo(20,(50,50),FOUNDWALDOpath)
 
