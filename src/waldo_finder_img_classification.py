@@ -43,17 +43,17 @@ class WaldoFinder():
 		the image to a more reasonable size'''
 
 		if self.img.shape[1]>=3000:
-			self.rescale_image(.5)
-		if 3000>self.img.shape[1]>=2750:
 			self.rescale_image(.55)
-		if 2750>self.img.shape[1]>=2500:
+		if 3000>self.img.shape[1]>=2750:
 			self.rescale_image(.6)
-		if 2500>self.img.shape[1]>=2250:
+		if 2750>self.img.shape[1]>=2500:
 			self.rescale_image(.65)
+		if 2500>self.img.shape[1]>=2250:
+			self.rescale_image(.75)
 		if 2250>self.img.shape[1]>=2000:
-			self.rescale_image(.7)
-		if 2000>self.img.shape[1]>=1700:
 			self.rescale_image(.8)
+		if 2000>self.img.shape[1]>=1700:
+			self.rescale_image(.85)
 
 	def rescale_image(self, scale):
 		''' this will automatically rescale the image to the fraction set by
