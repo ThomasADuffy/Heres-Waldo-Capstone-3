@@ -158,11 +158,15 @@ class WaldoFinder():
 
 if __name__ == "__main__":
 	# waldofind.test_sliding_window((64,64),128,resized=True,savedir=GIFpath)
-	testinglst=['test4.jpg','test5.jpg','test6.jpg']
-	# ['test1.jpg','test2.jpg','test3.jpg']
-	for imgname in testinglst:
+	testinglst1 = ['test4.jpg','test5.jpg','test6.jpg']
+	testinglst2 = ['test1.jpg','test2.jpg','test3.jpg']
+	holdoutlst1 = ['holdout1.jpg','holdout2.jpg','holdout3.jpg']
+	holdoutlst2 = ['holdout4.jpg','holdout5.jpg','holdout6.jpg']
+	holdoutlst3 = ['holdout7.jpg','holdout8.jpg','holdout9.jpg']
+
+	for imgname in testinglst1:
 		imgpath=os.path.join(IMGSpath,imgname)
 		waldofind = WaldoFinder(imgpath)
-		waldofind.load_model(os.path.join(MODELpath,'model_v2.h5'))
+		waldofind.load_model(os.path.join(MODELpath,'model_v4.h5'))
 		waldofind.find_waldo(20,(50,50),FOUNDWALDOpath)
 
