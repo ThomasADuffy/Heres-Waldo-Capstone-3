@@ -1,34 +1,43 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, flash, request, redirect, url_for
 import sys
 import os
-import json
-import pandas
-import numpy
-from pandas.io.json import json_normalize
+from werkzeug.utils import secure_filename
+from PIL import Image, ExifTags
+import numpy as np
+from gevent.pywsgi import WSGIServer
+from keras.preprocessing.image import img_to_array, load_img
+from keras.models import load_model
+from keras.metrics import top_k_categorical_accuracy
+import pandas as pd
 import pickle
-from sklearn.ensemble import AdaBoostClassifier
 
 FILEPATH=os.path.realpath(__file__)
 ROOTPATH=os.path.split(FILEPATH)[0]
 SRCPATH=os.path.join(ROOTPATH,'src')
-DATAPATH=os.path.join(ROOTPATH,'data')
-PREDICTJSON=os.path.join(DATAPATH,'predict.json')
-TESTJSON=os.path.join(DATAPATH,'test_tom.json')
 MODELPATH=os.path.join(ROOTPATH,'models')
+UPLOADPATH=os.path.join(ROOTPATH,'uploads')
 sys.path.append(SRCPATH)
-from riggi_model import transform_one
-from clean_api_data import APIPipeline
 
-def get_one(path):
-    with open(path, 'r') as f:
-        data=json.loads(f.read())
-        return data[-1]
+def rotate_save(f, file_path):
+    try:
+        image=Image.open(f)
+        for orientation in ExifTags.TAGS.keys():
+            if ExifTags.TAGS[orientation]=='Orientation':
+                break
+        exif=dict(image._getexif().items())
 
+        if exif[orientation] == 3:
+            image=image.rotate(180, expand=True)
+        elif exif[orientation] == 6:
+            image=image.rotate(270, expand=True)
+        elif exif[orientation] == 8:
+            image=image.rotate(90, expand=True)
+        image.save(file_path)
+        image.close()
 
-with open(os.path.join(MODELPATH,'riggi_model.pkl'), 'rb') as f:
-    ada_boosted = pickle.load(f)
-with open(os.path.join(MODELPATH,'lucas_RF_model_all_data.pkl'), 'rb') as f:
-    random_forest = pickle.load(f)
+    except (AttributeError, KeyError, IndexError):
+        image.save(file_path)
+        image.close()
 
 
 app = Flask(__name__)
@@ -42,29 +51,21 @@ def index():
 def contact():
     return render_template('contact.html')
 
-@app.route('/test1')
-def test1():
-    df=json_normalize(get_one(PREDICTJSON)).T
-    df_p=transform_one(json_normalize(get_one(PREDICTJSON)))
-    predict=ada_boosted.predict(df_p)[0]
-    if predict==1:
-        predict='FRAUD'
-    else:
-        predict='LEGIT'
-    prob_predict=str(round(ada_boosted.predict_proba(df_p)[0].max(),3)*100)+'%'
-    return render_template('test1.html',prob_predict=prob_predict,predict=predict,tables=[df.to_html(classes='data')], titles=df.columns.values)
 
-@app.route('/test2')
-def test2():
-    df=json_normalize(get_one(PREDICTJSON)).T
-    df_p=APIPipeline('api',get_one(PREDICTJSON)).df.values
-    predict= random_forest.predict(df_p)
-    if predict==1:
-        predict='FRAUD'
-    else:
-        predict='LEGIT'
-    prob_predict=str(round(random_forest.predict_proba(df_p)[0].max(),3)*100)+'%'
-    return render_template('test2.html',prob_predict=prob_predict,predict=predict,tables=[df.to_html(classes='data')], titles=df.columns.values)
+@app.route('/predictor', methods=["GET","POST"])
+def upload():
+    if request.method == 'POST':
+        f = request.files["file"]
+        basepath = os.path.dirname(__file__)
+        file_path = os.path.join(basepath, 'uploads', secure_filename(f.filename))
+        f.save(file_path)
+        rotate_save(f, file_path)
+        preds = model_predict(file_path, model)
+        os.remove(file_path)
+        return preds
+    return None
+    return render_template('waldo_finder.html')
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0',port=8080,threaded=True)

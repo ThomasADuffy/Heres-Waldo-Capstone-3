@@ -8,7 +8,7 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>Random Forest</title>
+    <title>Find Waldo!</title>
 
     <!-- Bootstrap core CSS -->
     <link href="../static/css/bootstrap.min.css" rel="stylesheet">
@@ -42,14 +42,13 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="/">Fraud Detection</a>
+          <a class="navbar-brand" href="/">Waldo Finder!</a>
         </div>
         <div id="navbar" class="collapse navbar-collapse">
           <ul class="nav navbar-nav">
             <li><a href="/">Home</a></li>
-            <li><a href="/test1">ADA Boosted</a></li>
-            <li class="active"><a href="/test2">Random Forest</a></li>
-            <li><a href="/contact">Contact</a></li>
+            <li class="active"><a href="/test1">Find Waldo</a></li>
+            <li><a href="/contact">Contact Me</a></li>
           </ul>
         </div><!--/.nav-collapse -->
       </div>
@@ -58,8 +57,8 @@
     <div class="container">
 
       <div class="starter-template">
-        <h1>Random Forest Model!</h1>
-        <p class="lead"><font size="4">This model is an Rnadom Forest Classifier model trained on the full dataset <br></font>
+        <h1>ADA Boosted Model!</h1>
+        <p class="lead"><font size="4">This model is an ADA boosted model trained on the full dataset <br></font>
         <font size="6">This is the raw data  <hr /><br></font>
         {% for table in tables %}
             {{titles[loop.index]}}
@@ -68,7 +67,7 @@
         <strong> <font size="6">The prediction:</font><br>
         <font size="7">{{ predict }}<br>
         <font size="5">Probability is: {{ prob_predict }}</font></strong><br>
-        <a href="/test2" class="btn btn-primary" role="button">Refresh</a><hr />
+        <a href="/test1" class="btn btn-primary" role="button">Refresh</a><hr />
           <font size="5"><strong>Click refresh and a new record will show if available</strong></font></p>
       </div>
 

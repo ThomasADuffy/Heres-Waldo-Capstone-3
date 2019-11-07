@@ -43,11 +43,11 @@ class WaldoFinder():
 		the image to a more reasonable size'''
 
 		if self.img.shape[1]>=3000:
-			self.rescale_image(.55)
-		if 3000>self.img.shape[1]>=2750:
 			self.rescale_image(.6)
-		if 2750>self.img.shape[1]>=2500:
+		if 3000>self.img.shape[1]>=2750:
 			self.rescale_image(.65)
+		if 2750>self.img.shape[1]>=2500:
+			self.rescale_image(.7)
 		if 2500>self.img.shape[1]>=2250:
 			self.rescale_image(.75)
 		if 2250>self.img.shape[1]>=2000:
@@ -84,6 +84,9 @@ class WaldoFinder():
 	
 
 	def _test_sliding_window(self,windowsize,stepsize, savedir=None):
+		"""This is to test the sliding window and visualize it (mainly used to create a gif)
+		for an example"""
+
 		p=0
 		(winW, winH) = windowsize
 		if self.resized:
@@ -103,10 +106,19 @@ class WaldoFinder():
 				p+=1
 
 	def load_model(self,modelpath):
+		""" This loads an .h5 keras model """
+
 		self.model=load_model(modelpath)
 		self.model_name=os.path.split(modelpath)[1].strip('.h5')
 
 	def find_waldo(self,stepsize,windowsize=(64,64), savedir=None):
+		""" This function will actually run window and classify the window with the model
+		loaded therefor finding waldo and output the top 10 probabilities in an image
+		to the savedir variable. the window size is the windowsize to look in
+		(64,64 is the best size to use unless a very small image), stepsize is 
+		how much the window will move per classification across and down"""
+
+
 		if self.model:
 			pass
 		else:
@@ -134,18 +146,18 @@ class WaldoFinder():
 						keras_window=resize(keras_window,(64,64))
 					window_gen=ImageDataGenerator(rescale=1./255).flow(np.array([keras_window],dtype='float32'))
 					prediction=self.model.predict(window_gen)[0][0]
-					predictionr=round(float(self.model.predict(window_gen)[0][0]),3)
+					predictionr=round(float(self.model.predict(window_gen)[0][0]),4)
 				else:
 					keras_window=self.keras_img[y:y + winH, x:x + winW]
 					if self.resize_window:
 						keras_window=resize(keras_window,(64,64))
 					window_gen=ImageDataGenerator(rescale=1./255).flow(np.array([keras_window]))
 					prediction=self.model.predict(window_gen)[0][0]
-					predictionr=round(float(self.model.predict(window_gen)[0][0]),3)
+					predictionr=round(float(self.model.predict(window_gen)[0][0]),4)
 				print(predictionr)
 				clone = img.copy()
 				if savedir:
-					if prediction>.50:
+					if prediction>.655:
 						cv2.rectangle(clone, (x, y), (x + winW, y + winH), (0, 255, 0), 3)
 						cv2.putText(clone, text=f'Waldo!{predictionr}', org=(x,y),
 									fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=self.scale, color=(0,255,0),thickness=2)
@@ -160,8 +172,12 @@ class WaldoFinder():
 						cv2.imshow("Window", clone)
 				cv2.waitKey(1)
 		print(f"Found waldo {p} times!")
+		prob_idx=np.argsort(problist)[::-1]
+		prob_idx=prob_idx[:10]
+		top_10_cord=np.array(cordlist)[prob_idx]
+		top_10_prob=np.array(problist)[prob_idx]
 		final=img.copy()
-		for cord,prob in zip(cordlist,problist):
+		for cord,prob in zip(top_10_cord,top_10_prob):
 			cv2.rectangle(final, cord, (cord[0] + winW, cord[1] + winH), (0, 255, 0), 2)
 			cv2.putText(final, text=f'Waldo!{prob}', org=cord,
 						fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=self.scale, color=(0,255,0),thickness=2)
@@ -171,15 +187,17 @@ class WaldoFinder():
 
 if __name__ == "__main__":
 	# waldofind._test_sliding_window((64,64),128,resized=True,savedir=GIFpath)
-	testinglst1 = ['test4.jpg','test5.jpg','test6.jpg']
-	testinglst2 = ['test1.jpg','test2.jpg','test3.jpg']
-	holdoutlst1 = ['holdout1.jpg','holdout2.jpg','holdout3.jpg']
-	holdoutlst2 = ['holdout4.jpg','holdout5.jpg','holdout6.jpg']
-	holdoutlst3 = ['holdout7.jpg','holdout8.jpg','holdout9.jpg']
 
-	for imgname in testinglst1:
+	testinglst1 = ['test1.jpg','test2.jpg']
+	testinglst2 = ['test3.jpg','test4.jpg']
+	testinglst3 = ['test5.jpg','test6.jpg']
+	holdoutlst1 = ['holdout1.jpg','holdout2.jpg','holdout3.jpg']
+	holdoutlst2 = ['holdout4.jpg','holdout5.jpg']
+	holdoutlst3 = ['holdout6.jpg','holdout7.jpg']
+	holdoutlst4 = ['holdout8.jpg','holdout9.jpg']
+	for imgname in holdoutlst3:
 		imgpath=os.path.join(IMGSpath,imgname)
 		waldofind = WaldoFinder(imgpath)
-		waldofind.load_model(os.path.join(MODELpath,'model_v3.h5'))
-		waldofind.find_waldo(20,(50,50),FOUNDWALDOpath)
+		waldofind.load_model(os.path.join(MODELpath,'model_v4.h5'))
+		waldofind.find_waldo(32,(64,64),FOUNDWALDOpath)
 
