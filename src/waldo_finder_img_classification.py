@@ -176,8 +176,11 @@ class WaldoFinder():
 		prob_idx=prob_idx[:10]
 		top_10_cord=np.array(cordlist)[prob_idx]
 		top_10_prob=np.array(problist)[prob_idx]
+		top_10_cord=top_10_cord.tolist()
+		top_10_prob=top_10_prob.tolist()
 		final=img.copy()
 		for cord,prob in zip(top_10_cord,top_10_prob):
+			cord=tuple(cord)
 			cv2.rectangle(final, cord, (cord[0] + winW, cord[1] + winH), (0, 255, 0), 2)
 			cv2.putText(final, text=f'Waldo!{prob}', org=cord,
 						fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=self.scale, color=(0,255,0),thickness=2)
@@ -195,9 +198,14 @@ if __name__ == "__main__":
 	holdoutlst2 = ['holdout4.jpg','holdout5.jpg']
 	holdoutlst3 = ['holdout6.jpg','holdout7.jpg']
 	holdoutlst4 = ['holdout8.jpg','holdout9.jpg']
-	for imgname in holdoutlst3:
+	for imgname in holdoutlst2:
 		imgpath=os.path.join(IMGSpath,imgname)
 		waldofind = WaldoFinder(imgpath)
 		waldofind.load_model(os.path.join(MODELpath,'model_v4.h5'))
 		waldofind.find_waldo(32,(64,64),FOUNDWALDOpath)
+	# imgpath=os.path.join(IMGSpath,'holdout3.jpg')
+	# waldofind = WaldoFinder(imgpath)
+	# waldofind.load_model(os.path.join(MODELpath,'model_v4.h5'))
+	# waldofind.find_waldo(32,(64,64),FOUNDWALDOpath)
+
 
