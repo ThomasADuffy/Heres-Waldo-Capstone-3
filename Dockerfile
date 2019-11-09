@@ -2,7 +2,7 @@
 FROM continuumio/anaconda3:latest
 
 # Set the working directory to /app
-WORKDIR /fraud-case-study
+WORKDIR /
 
 # Copy the current directory contents into the container at /app
 ADD . .
@@ -17,4 +17,4 @@ EXPOSE 8080
 ENV NAME World
 
 # Run app.py when the container launches
-CMD ["python", "app.py"]
+CMD ["python", "Flask_app.py"]

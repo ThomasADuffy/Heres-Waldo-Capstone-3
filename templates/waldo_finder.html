@@ -53,7 +53,12 @@
         </div><!--/.nav-collapse -->
       </div>
     </nav>
-
+{% if filename %}
+<div class="starter-template">
+    <h1>Click below to find Waldo on a new image!</h1>
+      <a href="/waldo_finder" class="btn btn-primary" role="button">Find Waldo Again!</a>
+  </div>
+{% else %}
     <div class="container">
       <div class="starter-template">
         <h1>Find Waldo!</h1>
@@ -67,12 +72,11 @@
             </form>  
           </p>
         </div>
-  
+{% endif %}
 <div class="container-fluid">
 {% if filename %}
-<p align='center'><font size="7"><strong>Heres Waldo!</strong><br></p></font><p align='center'><img src="{{ url_for('send_file', filename=filename) }}" align="center" width=></p>
+<p align='center'><font size="6"><strong>Heres Waldo!</strong><br></p></font><p align='center'><img src="{{ url_for('send_file', filename=filename) }}" align="center" width=></p>
 {% else %}
-<p align='center'><font size="6">Picture will show up here when done!</font></p>
 {% endif %}
 </div>
          

@@ -3,8 +3,12 @@ request
 numpy
 sklearn
 requests
-socket
 time
-datetime
-collections
-pymongo
+werkzeug
+PIL
+gevent
+scikit-learn
+scikit-image
+imutils
+opencv-python
+Tensorflow

@@ -6,7 +6,6 @@ from PIL import Image, ExifTags
 import numpy as np
 from gevent.pywsgi import WSGIServer
 import pandas as pd
-import time
 
 FILEPATH=os.path.realpath(__file__)
 ROOTPATH=os.path.split(FILEPATH)[0]
@@ -64,7 +63,6 @@ def upload():
         f.save(file_path)
         rotate_save(f, file_path)
         model_predict(file_path, CURRENTMODEL)
-        # os.remove(file_path)
         return redirect(url_for('uploaded_file', filename=os.path.split(file_path)[1]))
     if len(os.listdir(UPLOADPATH))!=0:
         for file in os.listdir(UPLOADPATH):
