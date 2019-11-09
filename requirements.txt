@@ -3,9 +3,8 @@ request
 numpy
 sklearn
 requests
-time
 werkzeug
-PIL
+pillow
 gevent
 scikit-learn
 scikit-image
