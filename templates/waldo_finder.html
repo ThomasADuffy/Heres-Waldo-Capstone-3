@@ -47,7 +47,7 @@
         <div id="navbar" class="collapse navbar-collapse">
           <ul class="nav navbar-nav">
             <li><a href="/">Home</a></li>
-            <li class="active"><a href="/test1">Find Waldo</a></li>
+            <li class="active"><a href="/waldo_finder">Find Waldo</a></li>
             <li><a href="/contact">Contact Me</a></li>
           </ul>
         </div><!--/.nav-collapse -->
@@ -55,22 +55,27 @@
     </nav>
 
     <div class="container">
-
       <div class="starter-template">
-        <h1>ADA Boosted Model!</h1>
-        <p class="lead"><font size="4">This model is an ADA boosted model trained on the full dataset <br></font>
-        <font size="6">This is the raw data  <hr /><br></font>
-        {% for table in tables %}
-            {{titles[loop.index]}}
-            {{ table|safe }}
-        {% endfor %}<br>
-        <strong> <font size="6">The prediction:</font><br>
-        <font size="7">{{ predict }}<br>
-        <font size="5">Probability is: {{ prob_predict }}</font></strong><br>
-        <a href="/test1" class="btn btn-primary" role="button">Refresh</a><hr />
-          <font size="5"><strong>Click refresh and a new record will show if available</strong></font></p>
-      </div>
-
+        <h1>Find Waldo!</h1>
+        <p class="lead"><font size="4">Click the button below to take a photo and get a prediction!<br></font>
+          <font size="3">(Please note this could take 1-2 minutes)</font><br><hr />
+          <form id="package_form" action="" method="POST" enctype="multipart/form-data">
+            <div>
+              <p align='center'><input id="upload_button" type="file" class="btn btn-default btn-xs" name="file" accept="image/*" capture required ></p>
+              <p><input id="submit_button" type="submit" class="btn btn-success" value="Search for Waldo!"><hr /></div>
+              </div>
+            </form>  
+          </p>
+        </div>
+  
+<div class="container-fluid">
+{% if filename %}
+<p align='center'><font size="7"><strong>Heres Waldo!</strong><br></p></font><p align='center'><img src="{{ url_for('send_file', filename=filename) }}" align="center" width=></p>
+{% else %}
+<p align='center'><font size="6">Picture will show up here when done!</font></p>
+{% endif %}
+</div>
+         
     </div><!-- /.container -->
 
 

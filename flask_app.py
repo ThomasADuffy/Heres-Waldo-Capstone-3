@@ -1,22 +1,23 @@
-from flask import Flask, render_template, flash, request, redirect, url_for
+from flask import Flask, render_template, flash, request, redirect, url_for, send_from_directory
 import sys
 import os
 from werkzeug.utils import secure_filename
 from PIL import Image, ExifTags
 import numpy as np
 from gevent.pywsgi import WSGIServer
-from keras.preprocessing.image import img_to_array, load_img
-from keras.models import load_model
-from keras.metrics import top_k_categorical_accuracy
 import pandas as pd
-import pickle
+import time
 
 FILEPATH=os.path.realpath(__file__)
 ROOTPATH=os.path.split(FILEPATH)[0]
 SRCPATH=os.path.join(ROOTPATH,'src')
-MODELPATH=os.path.join(ROOTPATH,'models')
+MODELPATH=os.path.join(ROOTPATH,'model')
+CURRENTMODEL=os.path.join(MODELPATH,'model_v4.h5')
 UPLOADPATH=os.path.join(ROOTPATH,'uploads')
 sys.path.append(SRCPATH)
+
+from waldo_finder_img_classification import *
+
 
 def rotate_save(f, file_path):
     try:
@@ -39,6 +40,10 @@ def rotate_save(f, file_path):
         image.save(file_path)
         image.close()
 
+def model_predict(path,model):
+    waldo_finder = WaldoFinder(path)
+    waldo_finder.load_model(model)
+    waldo_finder.find_waldo_flask_app(path)
 
 app = Flask(__name__)
 
@@ -51,25 +56,28 @@ def index():
 def contact():
     return render_template('contact.html')
 
-
-@app.route('/predictor', methods=["GET","POST"])
+@app.route('/waldo_finder', methods=["GET","POST"])
 def upload():
     if request.method == 'POST':
         f = request.files["file"]
-        basepath = os.path.dirname(__file__)
-        file_path = os.path.join(basepath, 'uploads', secure_filename(f.filename))
+        file_path = os.path.join(UPLOADPATH, secure_filename(f.filename))
         f.save(file_path)
         rotate_save(f, file_path)
-        preds = model_predict(file_path, model)
-        os.remove(file_path)
-        return preds
-    return None
+        model_predict(file_path, CURRENTMODEL)
+        # os.remove(file_path)
+        return redirect(url_for('uploaded_file', filename=os.path.split(file_path)[1]))
+    if len(os.listdir(UPLOADPATH))!=0:
+        for file in os.listdir(UPLOADPATH):
+            os.remove(os.path.join(UPLOADPATH,file))
     return render_template('waldo_finder.html')
 
+@app.route('/show/<filename>')
+def uploaded_file(filename):
+    return render_template('waldo_finder.html', filename=filename)
+
+@app.route('/uploads/<filename>')
+def send_file(filename):
+    return send_from_directory(UPLOADPATH, filename)
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0',port=8080,threaded=True)
-
-
-
-
+    app.run(host='0.0.0.0',port=8080,threaded=True,debug=True)

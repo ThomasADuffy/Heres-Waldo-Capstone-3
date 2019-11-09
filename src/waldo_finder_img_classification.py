@@ -188,21 +188,83 @@ class WaldoFinder():
 		cv2.imshow('final',final)
 		cv2.imwrite(savedir+f'/{p}_waldos_{self.img_name}_{self.model_name}.jpg',final)
 
-if __name__ == "__main__":
-	# waldofind._test_sliding_window((64,64),128,resized=True,savedir=GIFpath)
+	def find_waldo_flask_app(self,savedir,stepsize=32,windowsize=(64,64)):
+		""" This function will actually run window and classify the window with the model
+		loaded therefor finding waldo and output the top 10 probabilities in an image
+		to the savedir variable. the window size is the windowsize to look in
+		(64,64 is the best size to use unless a very small image), stepsize is 
+		how much the window will move per classification across and down"""
 
-	testinglst1 = ['test1.jpg','test2.jpg']
-	testinglst2 = ['test3.jpg','test4.jpg']
-	testinglst3 = ['test5.jpg','test6.jpg']
-	holdoutlst1 = ['holdout1.jpg','holdout2.jpg','holdout3.jpg']
-	holdoutlst2 = ['holdout4.jpg','holdout5.jpg']
-	holdoutlst3 = ['holdout6.jpg','holdout7.jpg']
-	holdoutlst4 = ['holdout8.jpg','holdout9.jpg']
-	for imgname in holdoutlst2:
-		imgpath=os.path.join(IMGSpath,imgname)
-		waldofind = WaldoFinder(imgpath)
-		waldofind.load_model(os.path.join(MODELpath,'model_v4.h5'))
-		waldofind.find_waldo(32,(64,64),FOUNDWALDOpath)
+		if self.model:
+			pass
+		else:
+			return 'No model loaded! please run load_model.'
+
+		if self.resized:
+			img = self.img_resized
+		else:
+			img = self.img
+		(winW, winH) = windowsize
+		if winW!=winH:
+			return 'Fix window size to be equal!'
+		if winW!=64:
+			self.resize_window=True
+		cordlist=[]
+		problist=[]
+		for (x, y, window) in self.__sliding_window(img, stepSize=stepsize, windowSize=(winW, winH)):
+				# if the window does not meet our desired window size, ignore it
+			if window.shape[0] != winH or window.shape[1] != winW:
+				continue
+			
+			if self.resized:
+				keras_window=self.keras_img_resized[y:y + winH, x:x + winW]
+				if self.resize_window:
+					keras_window=resize(keras_window,(64,64))
+				window_gen=ImageDataGenerator(rescale=1./255).flow(np.array([keras_window],dtype='float32'))
+				prediction=self.model.predict(window_gen)[0][0]
+				predictionr=round(float(self.model.predict(window_gen)[0][0]),4)
+
+			else:
+				keras_window=self.keras_img[y:y + winH, x:x + winW]
+				if self.resize_window:
+					keras_window=resize(keras_window,(64,64))
+				window_gen=ImageDataGenerator(rescale=1./255).flow(np.array([keras_window]))
+				prediction=self.model.predict(window_gen)[0][0]
+				predictionr=round(float(self.model.predict(window_gen)[0][0]),4)
+
+			if prediction>.655:
+				cordlist.append((x,y))
+				problist.append(predictionr)
+		prob_idx=np.argsort(problist)[::-1]
+		prob_idx=prob_idx[:10]
+		top_10_cord=np.array(cordlist)[prob_idx]
+		top_10_prob=np.array(problist)[prob_idx]
+		top_10_cord=top_10_cord.tolist()
+		top_10_prob=top_10_prob.tolist()
+		for cord,prob in zip(top_10_cord,top_10_prob):
+			cord=tuple(cord)
+			cv2.rectangle(img, cord, (cord[0] + winW, cord[1] + winH), (0, 255, 0), 2)
+			cv2.putText(img, text=f'Waldo!{prob}', org=cord,
+						fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=self.scale, color=(0,255,0),thickness=2)
+		cv2.imwrite(savedir,img)
+
+
+
+if __name__ == "__main__":
+	pass
+	# waldofind._test_sliding_window((64,64),128,resized=True,savedir=GIFpath)
+	# testinglst1 = ['test1.jpg','test2.jpg']
+	# testinglst2 = ['test3.jpg','test4.jpg']
+	# testinglst3 = ['test5.jpg','test6.jpg']
+	# holdoutlst1 = ['holdout1.jpg','holdout2.jpg','holdout3.jpg']
+	# holdoutlst2 = ['holdout4.jpg','holdout5.jpg']
+	# holdoutlst3 = ['holdout6.jpg','holdout7.jpg']
+	# holdoutlst4 = ['holdout8.jpg','holdout9.jpg']
+	# for imgname in holdoutlst2:
+	# 	imgpath=os.path.join(IMGSpath,imgname)
+	# 	waldofind = WaldoFinder(imgpath)
+	# 	waldofind.load_model(os.path.join(MODELpath,'model_v4.h5'))
+	# 	waldofind.find_waldo(32,(64,64),FOUNDWALDOpath)
 	# imgpath=os.path.join(IMGSpath,'holdout3.jpg')
 	# waldofind = WaldoFinder(imgpath)
 	# waldofind.load_model(os.path.join(MODELpath,'model_v4.h5'))
