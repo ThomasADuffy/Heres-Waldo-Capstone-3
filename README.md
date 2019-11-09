@@ -8,4 +8,6 @@ to create docker container, run these commands from the root of this github repo
 
 >docker image build -t waldo_finder . 
    
->docker container run --publish 8080:8080 --detach --name waldo waldo_finder
+>docker container run --publish 8080:8080 --detach --name waldo waldo_finder  
+  
+Then simply just go to the address listed in the terminal.(This will also work on an Could based instance like AWS EC2)
