@@ -61,7 +61,7 @@ class WaldoFinder():
 
 		w = int(self.img.shape[1] * scale)
 		self.img_resized = imutils.resize(self.img, width=w)
-		self.keras_img_resized = rescale(self.keras_img ,scale,anti_aliasing=False)
+		self.keras_img_resized = rescale(self.keras_img ,scale,anti_aliasing=False,multichannel=True)
 		self.resized = True
 		self.scale = scale
 

@@ -1,5 +1,5 @@
 # Use an official Python runtime as a parent image
-FROM continuumio/anaconda3:latest
+FROM tensorflow/tensorflow:2.0.0-py3
 
 # Set the working directory to /app
 WORKDIR /
@@ -8,6 +8,8 @@ WORKDIR /
 ADD . .
 
 # Install any needed packages specified in requirements.txt
+RUN apt-get update
+RUN apt-get install -y libsm6 libxext6 libxrender-dev
 RUN pip install -r requirements.txt
 
 # Make port 5000 available to the world outside this container

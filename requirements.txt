@@ -1,6 +1,7 @@
 Flask
 request
 numpy
+pandas
 sklearn
 requests
 werkzeug
@@ -10,4 +11,4 @@ scikit-learn
 scikit-image
 imutils
 opencv-python
-Tensorflow
+keras
