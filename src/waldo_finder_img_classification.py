@@ -30,16 +30,17 @@ class WaldoFinder():
 
     Arguments:
 
-    imgpath = which is the path to the image
-    flask = this designates if you this is on the flask app or not, if not this
-    can be used for vizualization while running it, otherwise if true no
-    vizulization will be used
-    threshold = this is probabilitiy threshold of deciding to classify if
-    a window is waldo or not
+    imgpath(str) = which is the path to the image
+    flask(bool) = this designates if you this is on the flask app or not.
+    vizulization(bool) = this will either vizualize or not the process,
+    if flask is set to true this will not be able to be active currently.
+    threshold(float) = this is probabilitiy threshold of deciding to classify
+    if a window is waldo or not
 
     '''
 
-    def __init__(self, imgpath, flask=False, threshold=.655):
+    def __init__(self, imgpath, vizualization=False,
+                 flask=False, threshold=.655):
 
         self.imgpath = imgpath
         self.img = cv2.imread(f'{imgpath}')
@@ -51,6 +52,23 @@ class WaldoFinder():
         self.img_name = os.path.split(self.imgpath)[1].strip('.jpg')
         self.flask = flask
         self.threshold = threshold
+        if self.flask:
+            self.vizualization = False
+            print('''**Can not have vizulaization
+            within flask app currently setting vizualization to False**''')
+        else:
+            self.vizualization = vizualization
+        self.__argcheck()
+
+    def __argcheck(self):
+        if not isinstance(self.vizualization, bool):
+            raise TypeError("Vizualization must be True or False")
+        if not isinstance(self.flask, bool):
+            raise TypeError("Flask must be True or False")
+        if not isinstance(self.threshold, float):
+            raise TypeError("Threshold must be a float between 0 and 1")
+        if not isinstance(self.imgpath, str):
+            raise TypeError("Imgpath must be a string")
 
     def rescale_check(self):
         ''' This will check how big the image is and see if it needs to rescale
@@ -97,7 +115,8 @@ class WaldoFinder():
         for y in range(0, self.img.shape[0], stepSize):
             for x in range(0, self.img.shape[1], stepSize):
                 # yield the current window
-                yield (x, y, self.img[y:y + windowSize[1], x:x + windowSize[0]])
+                yield (x, y,
+                       self.img[y:y + windowSize[1], x:x + windowSize[0]])
 
     def _test_sliding_window(self, windowsize, stepsize, savedir=None):
         """This is to test the sliding window and visualize it (mainly used to
@@ -113,7 +132,7 @@ class WaldoFinder():
         p = 0
         (winW, winH) = windowsize
         for (x, y, window) in self.__sliding_window(stepSize=stepsize,
-                                                  windowSize=(winW, winH)):
+                                                    windowSize=(winW, winH)):
             # if the window does not meet our desired window size, ignore it
             if window.shape[0] != winH or window.shape[1] != winW:
                 continue
@@ -134,7 +153,7 @@ class WaldoFinder():
 
         self.model = load_model(modelpath)
         self.model_name = os.path.split(modelpath)[1].strip('.h5')
-        if not self.flask:
+        if self.vizualization:
             print(f'Loaded model: {self.model_name}')
 
     def __prediction_on_window(self, x, y, winH, winW):
@@ -226,7 +245,7 @@ class WaldoFinder():
                                                                   winW)
             clone = self.img.copy()
             if prediction > self.threshold:
-                if not self.flask:
+                if self.vizualization:
                     print(predictionr)
                     cv2.rectangle(clone, (x, y),
                                   (x + winW, y + winH), (0, 255, 0), 3)
@@ -244,7 +263,7 @@ class WaldoFinder():
                 problist.append(predictionr)
                 waldos_found += 1
             else:
-                if not self.flask:
+                if self.vizualization:
                     print(predictionr)
                     cv2.rectangle(clone, (x, y), (x + winW, y + winH),
                                   (0, 0, 0), 2)
@@ -260,21 +279,24 @@ class WaldoFinder():
             cv2.putText(final, text=f'Waldo!{prob}', org=cord,
                         fontFace=cv2.FONT_HERSHEY_SIMPLEX,
                         fontScale=self.scale, color=(0, 255, 0), thickness=2)
-        if not self.flask:
+        if self.vizualization:
             print(f"Found waldo {waldos_found} times!")
             print('Press any key to close window')
             cv2.imshow('final', final)
             cv2.waitKey(0)
             cv2.imwrite(savedir+f'/{waldos_found}waldos_{self.img_name}_{self.model_name}.jpg', final)
         else:
-            cv2.imwrite(savedir, final)
+            if self.flask:
+                cv2.imwrite(savedir, final)
+            else:
+                cv2.imwrite(savedir+f'/{waldos_found}waldos_{self.img_name}_{self.model_name}.jpg', final)
 
     def find_waldo_parrallelize(self, savedir, stepsize=32, windowsize=(64, 64)):
         pass
 
 
 if __name__ == "__main__":
-    pass
+    # pass
     # waldofind._test_sliding_window((64,64),128,resized=True,savedir=GIFpath)
     # testinglst1 = ['test1.jpg','test2.jpg']
     # testinglst2 = ['test3.jpg','test4.jpg']
@@ -290,7 +312,7 @@ if __name__ == "__main__":
     # 	waldofind.find_waldo(32,(64,64),FOUNDWALDOpath)
 
     imgpath = os.path.join(IMGSpath, 'test3.jpg')
-    waldofind = WaldoFinder(imgpath, flask=True)
+    waldofind = WaldoFinder(imgpath, vizualization=True)
     waldofind.load_model(os.path.join(MODELpath, 'model_v4.h5'))
-    waldofind.find_waldo(savedir=FOUNDWALDOpath+'/flask.jpg',
+    waldofind.find_waldo(savedir=FOUNDWALDOpath,
                          stepsize=32, windowsize=(64, 64))
