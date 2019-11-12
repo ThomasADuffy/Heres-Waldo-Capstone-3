@@ -3,12 +3,12 @@ import argparse
 
 
 def rotate_save(input_image, output_path):
-    ''' This is in the flask app, made locally for testing basically takes the 
-    orentation and resaves it to get the actual representation of 
-    the image correctly
-    
+    ''' This is in the flask app, made locally for testing basically takes the
+    orentation and resaves it to get the actual representation of the image
+    correctly. Used for local testing and work
+
     Arguments:
-    
+
     input_image = the input image path
     output_path = this is the output path of the saved image'''
     try:
@@ -34,7 +34,8 @@ def rotate_save(input_image, output_path):
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description='remove EXIF tags (orentation mainly)')
-    parser.add_argument('path', type=str, help='Location of where the files goes')
+    parser.add_argument('path', type=str,
+                        help='Location of where the files goes')
     args = parser.parse_args()
     args.path
     args.path.strip('.jpg')+' converted.jpg'

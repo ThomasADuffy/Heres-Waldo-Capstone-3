@@ -5,7 +5,7 @@ from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.preprocessing.image import load_img, img_to_array
 from skimage.transform import rescale, resize
 from tensorflow.keras.models import Sequential, load_model
-from tensorflow.keras.layers import Conv2D, MaxPooling2D, Activation, Dropout,Flatten, Dense
+from tensorflow.keras.layers import Conv2D, MaxPooling2D, Activation, Dropout, Flatten, Dense
 from skimage import io, color, filters
 import imutils
 import tensorflow as tf
@@ -27,7 +27,7 @@ class WaldoFinder():
     reasons. The default box is 64,64 but any box can be used. it will resize
     the window to 64 by 64 to pass into the model because that is what
     these models are trained on.
-    
+
     Arguments:
 
     imgpath = which is the path to the image
@@ -73,9 +73,9 @@ class WaldoFinder():
     def rescale_image(self, scale):
         ''' this will automatically rescale the image to the fraction set by
         the scale metric
-        
+
         Arguments:
-        
+
         scale = this is the fraction that the picture will be scaled by'''
 
         w = int(self.img.shape[1] * scale)
@@ -90,7 +90,7 @@ class WaldoFinder():
         '''This is the sliding window which goes across the image it just
         increments the y and x at the size of the windowSize, This is a helper
         function do not use!
-        
+
         Arguments:
 
         stepSize = the size of the steps fort the window in pixels
@@ -109,7 +109,7 @@ class WaldoFinder():
     def _test_sliding_window(self, windowsize, stepsize, savedir=None):
         """This is to test the sliding window and visualize it (mainly used to
         create a gif) for an example
-        
+
         Arguments:
 
         stepSize = the size of the steps fort the window in pixels
@@ -125,7 +125,7 @@ class WaldoFinder():
             img = self.img
         for (x, y, window) in self.sliding_window(stepSize=stepsize,
                                                   windowSize=(winW, winH)):
-                # if the window does not meet our desired window size, ignore it
+            # if the window does not meet our desired window size, ignore it
             if window.shape[0] != winH or window.shape[1] != winW:
                 continue
             clone = img.copy()
@@ -137,7 +137,7 @@ class WaldoFinder():
             p += 1
 
     def load_model(self, modelpath):
-        """ This loads an .h5 keras model 
+        """ This loads an .h5 keras model
 
         Arguments:
 
@@ -198,12 +198,14 @@ class WaldoFinder():
 
         return top_10_cord, top_10_prob
 
-    def find_waldo(self, savedir, stepsize=32, windowsize=(64, 64)):
-        """ This function will actually run window and classify the window with the model
-        loaded therefor finding waldo and output the top 10 probabilities in an image
-        to the savedir variable. the window size is the windowsize to look in
-        (64,64 is the best size to use unless a very small image), stepsize is 
-        how much the window will move per classification across and down
+    def find_waldo(self, savedir, stepsize=32, windowsize=(64, 64),
+                   save_window=False):
+        """ This function will actually run window and classify the window with
+        the model loaded therefor finding waldo and output the top 10
+        probabilities in an image to the savedir variable. the window size is
+        the windowsize to look in(64,64 is the best size to use unless a very
+        small image), stepsize is how much the window will move per
+        classification across and down.
 
         Arguments:
 
@@ -247,15 +249,15 @@ class WaldoFinder():
                 if not self.flask:
                     print(predictionr)
                     cv2.rectangle(clone, (x, y),
-                                    (x + winW, y + winH), (0, 255, 0), 3)
+                                  (x + winW, y + winH), (0, 255, 0), 3)
                     cv2.putText(clone, text=f'Waldo!{predictionr}',
                                 org=(x, y),
                                 fontFace=cv2.FONT_HERSHEY_SIMPLEX,
                                 fontScale=self.scale,
                                 color=(0, 255, 0), thickness=2)
                     cv2.imshow("Window", clone)
-                    # this line below is used to save the image windows where it classifies waldo
-                    # io.imsave(savedir+f'/window{p}_{self.img_name}_{self.model_name}.jpg',keras_window.astype('uint8'))
+                    if save_window:
+                        io.imsave(savedir+f'/window{p}_{self.img_name}_{self.model_name}.jpg', keras_window.astype('uint8'))
                     print(f'Found Waldo at {x},{y}')
                 cordlist.append((x, y))
                 problist.append(predictionr)
@@ -264,7 +266,7 @@ class WaldoFinder():
                 if not self.flask:
                     print(predictionr)
                     cv2.rectangle(clone, (x, y), (x + winW, y + winH),
-                                    (0, 0, 0), 2)
+                                  (0, 0, 0), 2)
                     cv2.imshow("Window", clone)
         top_10_cord, top_10_prob = self.__top_10_waldo_probabilities(cordlist,
                                                                      problist)
