@@ -43,7 +43,6 @@ class WaldoFinder():
 
         self.imgpath = imgpath
         self.img = cv2.imread(f'{imgpath}')
-        self.resized = False
         self.model = None
         self.keras_img = img_to_array(load_img(f'{imgpath}'))
         self.scale = None
@@ -79,11 +78,10 @@ class WaldoFinder():
         scale = this is the fraction that the picture will be scaled by'''
 
         w = int(self.img.shape[1] * scale)
-        self.img_resized = imutils.resize(self.img, width=w)
-        self.keras_img_resized = rescale(self.keras_img, scale,
+        self.img = imutils.resize(self.img.copy(), width=w)
+        self.keras_img = rescale(self.keras_img, scale,
                                          anti_aliasing=False,
                                          multichannel=True)
-        self.resized = True
         self.scale = scale
 
     def __sliding_window(self, stepSize, windowSize):
@@ -96,15 +94,10 @@ class WaldoFinder():
         stepSize = the size of the steps fort the window in pixels
         windowSize = this is a tuple that is the size of the window,
         has to be equal'''
-
-        if self.resized:
-            img = self.img_resized
-        else:
-            img = self.img
-        for y in range(0, img.shape[0], stepSize):
-            for x in range(0, img.shape[1], stepSize):
+        for y in range(0, self.img.shape[0], stepSize):
+            for x in range(0, self.img.shape[1], stepSize):
                 # yield the current window
-                yield (x, y, img[y:y + windowSize[1], x:x + windowSize[0]])
+                yield (x, y, self.img[y:y + windowSize[1], x:x + windowSize[0]])
 
     def _test_sliding_window(self, windowsize, stepsize, savedir=None):
         """This is to test the sliding window and visualize it (mainly used to
@@ -119,16 +112,12 @@ class WaldoFinder():
 
         p = 0
         (winW, winH) = windowsize
-        if self.resized:
-            img = self.img_resized
-        else:
-            img = self.img
-        for (x, y, window) in self.sliding_window(stepSize=stepsize,
+        for (x, y, window) in self.__sliding_window(stepSize=stepsize,
                                                   windowSize=(winW, winH)):
             # if the window does not meet our desired window size, ignore it
             if window.shape[0] != winH or window.shape[1] != winW:
                 continue
-            clone = img.copy()
+            clone = self.img.copy()
             cv2.rectangle(clone, (x, y), (x + winW, y + winH), (0, 0, 0), 2)
             cv2.imshow("Window", clone)
             cv2.waitKey(1)
@@ -148,7 +137,7 @@ class WaldoFinder():
         if not self.flask:
             print(f'Loaded model: {self.model_name}')
 
-    def __prediction_on_window(self, x, y, winH, winW, keras_img):
+    def __prediction_on_window(self, x, y, winH, winW):
         ''' This will return the prediction on the given window and the rouned
         one.
 
@@ -166,13 +155,13 @@ class WaldoFinder():
         preditionr = this is prediction rounded to 4 signifigant figures
         '''
 
-        keras_window = keras_img[y:y + winH, x:x + winW]
+        keras_window = self.keras_img[y:y + winH, x:x + winW]
         if self.resize_window:
             keras_window = resize(keras_window, (64, 64))
         window_gen = ImageDataGenerator(rescale=1./255).flow(np.array([keras_window], dtype='float32'))
         prediction = self.model.predict(window_gen)[0][0]
         predictionr = round(float(self.model.predict(window_gen)[0][0]), 4)
-        return prediction, predictionr
+        return keras_window, prediction, predictionr
 
     def __top_10_waldo_probabilities(self, cordlist, problist):
         ''' This takes in the probability list and coordinate list and sorts
@@ -218,22 +207,14 @@ class WaldoFinder():
         problist = []
         waldos_found = 0
         (winW, winH) = windowsize
-
         if self.model:
             pass
         else:
             return 'No model loaded! please run load_model.'
 
-        if self.resized:
-            img = self.img_resized
-            keras_img = self.keras_img_resized
-        else:
-            img = self.img
-            keras_img = self.keras_img
-
         if winW != winH:
             return 'Fix window size to be equal!'
-        if winW != 64:
+        elif winW != 64:
             self.resize_window = True
 
         for (x, y, window) in self.__sliding_window(stepSize=stepsize,
@@ -241,10 +222,9 @@ class WaldoFinder():
             # if the window does not meet our desired window size, ignore it
             if window.shape[0] != winH or window.shape[1] != winW:
                 continue
-            prediction, predictionr = self.__prediction_on_window(x, y, winH,
-                                                                  winW,
-                                                                  keras_img)
-            clone = img.copy()
+            keras_window, prediction, predictionr = self.__prediction_on_window(x, y, winH,
+                                                                  winW)
+            clone = self.img.copy()
             if prediction > self.threshold:
                 if not self.flask:
                     print(predictionr)
@@ -256,6 +236,7 @@ class WaldoFinder():
                                 fontScale=self.scale,
                                 color=(0, 255, 0), thickness=2)
                     cv2.imshow("Window", clone)
+                    cv2.waitKey(1)
                     if save_window:
                         io.imsave(savedir+f'/window{p}_{self.img_name}_{self.model_name}.jpg', keras_window.astype('uint8'))
                     print(f'Found Waldo at {x},{y}')
@@ -268,9 +249,10 @@ class WaldoFinder():
                     cv2.rectangle(clone, (x, y), (x + winW, y + winH),
                                   (0, 0, 0), 2)
                     cv2.imshow("Window", clone)
+                    cv2.waitKey(1)
         top_10_cord, top_10_prob = self.__top_10_waldo_probabilities(cordlist,
                                                                      problist)
-        final = img.copy()
+        final = self.img.copy()
         for cord, prob in zip(top_10_cord, top_10_prob):
             cord = tuple(cord)
             cv2.rectangle(final, cord, (cord[0] + winW, cord[1] + winH),
@@ -280,10 +262,15 @@ class WaldoFinder():
                         fontScale=self.scale, color=(0, 255, 0), thickness=2)
         if not self.flask:
             print(f"Found waldo {waldos_found} times!")
+            print('Press any key to close window')
             cv2.imshow('final', final)
+            cv2.waitKey(0)
             cv2.imwrite(savedir+f'/{waldos_found}waldos_{self.img_name}_{self.model_name}.jpg', final)
         else:
             cv2.imwrite(savedir, final)
+
+    def find_waldo_parrallelize(self, savedir, stepsize=32, windowsize=(64, 64)):
+        pass
 
 
 if __name__ == "__main__":
@@ -303,7 +290,7 @@ if __name__ == "__main__":
     # 	waldofind.find_waldo(32,(64,64),FOUNDWALDOpath)
 
     imgpath = os.path.join(IMGSpath, 'test3.jpg')
-    waldofind = WaldoFinder(imgpath)
+    waldofind = WaldoFinder(imgpath, flask=True)
     waldofind.load_model(os.path.join(MODELpath, 'model_v4.h5'))
-    waldofind.find_waldo(savedir=FOUNDWALDOpath,
+    waldofind.find_waldo(savedir=FOUNDWALDOpath+'/flask.jpg',
                          stepsize=32, windowsize=(64, 64))

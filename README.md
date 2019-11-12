@@ -2,20 +2,23 @@
 Utilizing Computer vision (Open CV) and a CNN to find waldo
 
 <p align="center"> 
-<img src="/images/misc_imgs/Title-Banner.jpg">
+<img src="/imgs/shining_waldo.jpg">
 </p>
 
 # **Table of Contents** <!-- omit in toc -->
 - [Heres-Waldo-Capstone-3](#heres-waldo-capstone-3)
 - [**Introduction**](#introduction)
 - [**How to run and utilize this app**](#how-to-run-and-utilize-this-app)
+- [**Contact Me!**](#contact-me)
 - [**Readme Images and Data Credits/Sources**](#readme-images-and-data-creditssources)
   - [Readme/Poster Images sources](#readmeposter-images-sources)
   - [Datasets sources](#datasets-sources)
 
 # **Introduction**
 This Project is based off of my a preliminary project which can be found [here](https://github.com/ThomasADuffy/Whos-Waldo-Capstone-2). Please read it before continuing to get a full scope of my images.
-Readme coming soon! Please wait!, Feel free to contact me with more information!
+
+
+Readme WIP! Please wait!, Feel free to contact me with more information!
 
 
 
@@ -28,6 +31,14 @@ to create docker container, run these commands from the root of this github repo
 >docker container run --publish 8080:8080 --detach --name waldo waldo_finder  
   
 Then simply just go to the address listed in the terminal.(This will also work on an Could based instance like AWS EC2)
+
+# **Contact Me!**
+<p class="lead"><font size='5'>Linked-In<br> <a href="https://www.linkedin.com/in/thomas-a-duffy/">Thomas Duffy</a><br></font><hr />
+    <font size='5'>E-Mail</font><br>
+    <font size='4'><strong> tommy.duffy@gmail.com</strong><br>
+    <hr />
+    <font size='5'>Github Link below:<br>
+    <a href="https://github.com/ThomasADuffy">Thomas Duffy</a><br></font>
 
 # **Readme Images and Data Credits/Sources**  
 ## Readme/Poster Images sources
