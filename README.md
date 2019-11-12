@@ -33,20 +33,21 @@ to create docker container, run these commands from the root of this github repo
 Then simply just go to the address listed in the terminal.(This will also work on an Could based instance like AWS EC2)
 
 # **Contact Me!**
-<p class="lead"><font size='5'>Linked-In<br> <a href="https://www.linkedin.com/in/thomas-a-duffy/">Thomas Duffy</a><br></font><hr />
-    <font size='5'>E-Mail</font><br>
-    <font size='4'><strong> tommy.duffy@gmail.com</strong><br>
+<p class="lead" align="center"><font size='4'>Linked-In<br> <a href="https://www.linkedin.com/in/thomas-a-duffy/">Thomas Duffy</a><br></font><hr />
+   <p class="lead" align="center"> <font size='4'>E-Mail</font><br>
+    <font size='3'><strong> tommy.duffy@gmail.com</strong><br></p>
     <hr />
-    <font size='5'>Github Link below:<br>
-    <a href="https://github.com/ThomasADuffy">Thomas Duffy</a><br></font>
+    <p class="lead" align="center"> <font size='4'>Github<br>
+    <a href="https://github.com/ThomasADuffy">Thomas Duffy</a><br></font></p>
 
 # **Readme Images and Data Credits/Sources**  
 ## Readme/Poster Images sources
 
 Ennui ~ Elegant Neural Network User Interface ~
 Jesse Michel-Zack Holbrook-Stefan Grosser-Hendrik Strobelt-Rikhav Shah - https://math.mit.edu/ennui/
- 
-  
+
+The Shining. (1980). film. Britain: Stanley Kubrick, Warner Bros. 
+
 A Comprehensive Guide To Convolutional Neural Networks - the Eli5 Way
 Sumit Saha - https://towardsdatascience.com/a-comprehensive-guide-to-convolutional-neural-networks-the-eli5-way-3bd2b1164a53
 
