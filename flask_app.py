@@ -42,8 +42,7 @@ def rotate_save(f, file_path):
 
 def model_predict(path, model):
     waldo_finder = WaldoFinder(imgpath=path, flask=True, vizulization=False)
-    waldo_finder.load_model(model)
-    waldo_finder.find_waldo(savedir=path)
+    waldo_finder.find_waldo(savedir=path, modelpath=model)
 
 
 app = Flask(__name__)

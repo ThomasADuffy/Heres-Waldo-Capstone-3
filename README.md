@@ -15,7 +15,9 @@ Utilizing Computer vision (Open CV) and a CNN to find waldo
   - [Datasets sources](#datasets-sources)
 
 # **Introduction**
-This Project is based off of my a preliminary project which can be found [here](https://github.com/ThomasADuffy/Whos-Waldo-Capstone-2). Please read it before continuing to get a full scope of my images.
+This Project is based off of my a preliminary project which can be found [here](https://github.com/ThomasADuffy/Whos-Waldo-Capstone-2). Please read it before continuing to get a full scope of my process and work.
+
+For this project I utilized a CNN to scan through a fed in image utilizing the sliding window technique to find Waldo. After creating this
 
 
 Readme WIP! Please wait!, Feel free to contact me with more information!

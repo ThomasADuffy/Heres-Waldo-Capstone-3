@@ -12,3 +12,5 @@ scikit-image
 imutils
 opencv-python
 keras
+itertools
+functools

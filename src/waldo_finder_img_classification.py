@@ -1,14 +1,17 @@
-import cv2
 import os
+import sys
+import cv2
+import imutils
 import numpy as np
-from tensorflow.keras.preprocessing.image import ImageDataGenerator
-from tensorflow.keras.preprocessing.image import load_img, img_to_array
+import tensorflow as tf
+import multiprocessing as mp
+from functools import partial
+from skimage import io, color, filters
 from skimage.transform import rescale, resize
 from tensorflow.keras.models import Sequential, load_model
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.preprocessing.image import load_img, img_to_array
 from tensorflow.keras.layers import Conv2D, MaxPooling2D, Activation, Dropout, Flatten, Dense
-from skimage import io, color, filters
-import imutils
-import tensorflow as tf
 
 SRCpath = os.path.split(os.path.abspath(__file__))[0]
 ROOTpath = os.path.split(SRCpath)[0]
@@ -17,6 +20,10 @@ GIFpath = os.path.join(IMGSpath, 'gif')
 IMGTESTpath = os.path.join(IMGSpath, 'test3.jpg')
 MODELpath = os.path.join(ROOTpath, 'model')
 FOUNDWALDOpath = os.path.join(IMGSpath, 'waldo_found')
+
+sys.path.append(SRCpath)
+
+from multiprocessing_helpers import *
 
 
 class WaldoFinder():
@@ -40,7 +47,7 @@ class WaldoFinder():
     '''
 
     def __init__(self, imgpath, vizualization=False,
-                 flask=False, threshold=.655):
+                 flask=False, threshold=.655, parallel=False):
 
         self.imgpath = imgpath
         self.img = cv2.imread(f'{imgpath}')
@@ -58,7 +65,13 @@ class WaldoFinder():
             within flask app currently setting vizualization to False**''')
         else:
             self.vizualization = vizualization
+        self.num_cores = mp.cpu_count()
         self.__argcheck()
+        self.parallel = parallel
+        if self.vizualization:
+            self.parallel = False
+            print('''**Can not have vizulaization
+            with parallel model currently setting parallel to False**''')
 
     def __argcheck(self):
         if not isinstance(self.vizualization, bool):
@@ -144,18 +157,6 @@ class WaldoFinder():
                 cv2.imwrite(savedir+f'/{p}.jpg', clone)
             p += 1
 
-    def load_model(self, modelpath):
-        """ This loads an .h5 keras model
-
-        Arguments:
-
-        modelpath = this is where the model is located"""
-
-        self.model = load_model(modelpath)
-        self.model_name = os.path.split(modelpath)[1].strip('.h5')
-        if self.vizualization:
-            print(f'Loaded model: {self.model_name}')
-
     def __prediction_on_window(self, x, y, winH, winW):
         ''' This will return the prediction on the given window and the rouned
         one.
@@ -206,7 +207,20 @@ class WaldoFinder():
 
         return top_10_cord, top_10_prob
 
-    def find_waldo(self, savedir, stepsize=32, windowsize=(64, 64),
+    def __window_check(self, winW, winH):
+        ''' This is a small check to see if we need to resize the window
+        to pass into the CNN.
+
+        Arguments:
+
+        winW = window width
+        winH = window height
+        '''
+
+        if winW != 64:
+            self.resize_window = True
+
+    def find_waldo(self, savedir, modelpath, stepsize=32, windowsize=(64, 64),
                    save_window=False):
         """ This function will actually run window and classify the window with
         the model loaded therefor finding waldo and output the top 10
@@ -220,8 +234,17 @@ class WaldoFinder():
         stepSize = the size of the steps fort the window in pixels
         windowSize = this is a tuple that is the size of the window,
         has to be equal
-        savedir = the directory where images it will be saved(Used for gif)"""
+        savedir = the directory where final image it will be saved
+        modelpath = the path of the model to load to use"""
 
+        if self.parallel:
+            return print('''***Cannot run Parallel model with normal function!
+            please run find_waldo_parallelize!***''')
+        self.model = load_model(modelpath)
+        self.model_name = os.path.split(modelpath)[1].strip('.h5')
+        if self.vizualization:
+            print(f'Loaded model {self.model_name}')
+        self.modelpath = modelpath
         cordlist = []
         problist = []
         waldos_found = 0
@@ -229,12 +252,10 @@ class WaldoFinder():
         if self.model:
             pass
         else:
-            return 'No model loaded! please run load_model.'
-
+            return print('No model loaded! please run load_model.')
         if winW != winH:
-            return 'Fix window size to be equal!'
-        elif winW != 64:
-            self.resize_window = True
+            return print('Fix window size to be equal!')
+        self.__window_check(winW, winH)
 
         for (x, y, window) in self.__sliding_window(stepSize=stepsize,
                                                     windowSize=(winW, winH)):
@@ -269,30 +290,102 @@ class WaldoFinder():
                                   (0, 0, 0), 2)
                     cv2.imshow("Window", clone)
                     cv2.waitKey(1)
+        self._plot_top10_waldos_found(cordlist, problist,
+                                          waldos_found, winH, savedir)
+
+    def _plot_top10_waldos_found(self, cordlist, problist,
+                                 waldos_found, winW_H, savedir):
+        ''' This is to plot the model and save it, it will only plot the top 10
+        cordinates in the model
+
+        Arguments:
+
+        cordlist = list of cordinates for waldos found
+        problist = list of probabillities for waldos found
+        waldos_found = number of waldos found
+        winW_H = is window height and length
+        savedir = the save directory'''
+
         top_10_cord, top_10_prob = self.__top_10_waldo_probabilities(cordlist,
                                                                      problist)
         final = self.img.copy()
         for cord, prob in zip(top_10_cord, top_10_prob):
             cord = tuple(cord)
-            cv2.rectangle(final, cord, (cord[0] + winW, cord[1] + winH),
-                          (0, 255, 0), 2)
+            cv2.rectangle(final, cord, (cord[0] + winW_H, cord[1] + winW_H),
+                        (0, 255, 0), 2)
             cv2.putText(final, text=f'Waldo!{prob}', org=cord,
                         fontFace=cv2.FONT_HERSHEY_SIMPLEX,
                         fontScale=self.scale, color=(0, 255, 0), thickness=2)
         if self.vizualization:
             print(f"Found waldo {waldos_found} times!")
-            print('Press any key to close window')
-            cv2.imshow('final', final)
-            cv2.waitKey(0)
+            print(f"Saving image in:{savedir+'/'+waldos_found+'waldos_'+self.img_name+'_'+self.model_name+'.jpg'}")
             cv2.imwrite(savedir+f'/{waldos_found}waldos_{self.img_name}_{self.model_name}.jpg', final)
+            cv2.imshow('final', final)
+            print('Press any key to close window')
+            cv2.waitKey(0)
+            cv2.destroyAllWindows()
         else:
             if self.flask:
                 cv2.imwrite(savedir, final)
             else:
                 cv2.imwrite(savedir+f'/{waldos_found}waldos_{self.img_name}_{self.model_name}.jpg', final)
 
-    def find_waldo_parrallelize(self, savedir, stepsize=32, windowsize=(64, 64)):
-        pass
+    def find_waldo_parallelize(self, stepsize, winW_H, modelpath, savedir):
+        ''' This function is to find waldo utilizing multicore processing,
+        this is a work in progress and takes some tuning, please note this is
+        meant to be used with a large ec2 instance. Please note also for a
+        smaller step size, and window size, this causes a much higher core size
+        and can ultimately end up slowing down the process if not enough cores
+        are avalible visualization is not a possibility currently
+
+        Arguments:
+
+        stepSize = the size of the steps fort the window in pixels
+        winW_H = this the size of the window's width and height(has to be equal)
+        savedir = the directory where final image it will be saved
+        modelpath = the path of the model to load to use'''
+
+        if not self.parallel:
+            return print('''Please reinstantiate the WaldoFinder
+            object with self.parallel as True''')
+        if self.model:
+            self.model = None
+            tf.keras.backend.clear_session()
+        self.model_name = os.path.split(modelpath)[1].strip('.h5')
+
+        array_height = (int((self.keras_img.shape[0]-winW_H)/stepsize)*stepsize)+winW_H
+        array_length = (int((self.keras_img.shape[1]-winW_H)/stepsize)*stepsize)+winW_H
+        keras_img_confined = self.keras_img[:array_height, :array_length, :]
+        n_total_rows = ((array_height-winW_H)/stepsize)+1
+        n_rows_per_core = 1
+        num_cores_needed = int(n_total_rows / n_rows_per_core)
+        n_rows_per_core, num_cores_needed = find_number_of_cores(self.num_cores, n_rows_per_core, n_total_rows)
+        diffrence_formula = (stepsize*n_rows_per_core)
+        cpu_pool = mp.Pool(num_cores_needed)
+        parallel_array = []
+        for core in range(num_cores_needed):
+            sub_array_height_start = core*diffrence_formula
+            sub_array_height_end = sub_array_height_start + diffrence_formula
+            slice_img = keras_img_confined[sub_array_height_start:sub_array_height_end, :, :]
+            parallel_array.append([core, slice_img])
+        waldo_func = partial(parallelize_waldo_finder, winW_H, stepsize,
+                             modelpath, self.threshold,
+                             diffrence_formula, n_rows_per_core)
+        results = cpu_pool.map(waldo_func, parallel_array)
+        cpu_pool.close()
+        cpu_pool.join()
+        final = self.img.copy()
+        cordlist =[]
+        problist = []
+        waldos_found = 0
+        for cords, probs, waldos in results:
+            for cord in cords:
+                cordlist.append(cord)
+            for prob in probs:
+                problist.append(prob)
+            waldos_found += waldos
+        self._plot_top10_waldos_found(cordlist, problist,
+                                      waldos_found, winW_H, savedir)
 
 
 if __name__ == "__main__":
@@ -305,14 +398,10 @@ if __name__ == "__main__":
     # holdoutlst2 = ['holdout4.jpg','holdout5.jpg']
     # holdoutlst3 = ['holdout6.jpg','holdout7.jpg']
     # holdoutlst4 = ['holdout8.jpg','holdout9.jpg']
-    # for imgname in holdoutlst2:
-    # 	imgpath=os.path.join(IMGSpath,imgname)
-    # 	waldofind = WaldoFinder(imgpath)
-    # 	waldofind.load_model(os.path.join(MODELpath,'model_v4.h5'))
-    # 	waldofind.find_waldo(32,(64,64),FOUNDWALDOpath)
 
     imgpath = os.path.join(IMGSpath, 'test3.jpg')
-    waldofind = WaldoFinder(imgpath, vizualization=True)
-    waldofind.load_model(os.path.join(MODELpath, 'model_v4.h5'))
-    waldofind.find_waldo(savedir=FOUNDWALDOpath,
-                         stepsize=32, windowsize=(64, 64))
+    waldofind = WaldoFinder(imgpath, parallel=True)
+    # waldofind.find_waldo(savedir=FOUNDWALDOpath,
+    #                      modelpath=os.path.join(MODELpath, 'model_v4.h5'),
+    #                      stepsize=32, windowsize=(64, 64))
+    waldofind.find_waldo_parallelize(32, 64, os.path.join(MODELpath, 'model_v4.h5'), savedir=FOUNDWALDOpath)
