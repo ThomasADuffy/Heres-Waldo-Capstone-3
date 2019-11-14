@@ -6,7 +6,8 @@ from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
 def find_number_of_cores(current_num_cores, n_rows_per_core, n_total_rows):
     ''' This function will basically find the number of cores to use for
-    parallel processing. This is used within the waldo class mainly
+    parallel processing. this allows any isntance to run parallell processing
+    if they have multiple cores (over 10 is reccomended.)
 
     Arguments:
 
@@ -53,14 +54,15 @@ def parallelize_waldo_finder(winW_H, stepsize, modelpath,
 
     Arguments:
 
-    slice_img_tuple = a tuple where the core is the first object and the slice
-    of the image array is the second object
     winW_H = this is the windowsize
     stepsize = this is the stepsize of the window
-    model = this is the model
-    threshold = this is the threshold of probabillity to detrmine if it is 
-    Waldo diffrence_formula = this is the formula of the distance between
+    modelpath = this is the path to the model
+    threshold = this is the threshold of probabillity to detrmine if an image
+    is Waldo
+    diffrence_formula = this is the formula of the distance between
     the start of the array vs the end of the array
+    slice_img_tuple = a tuple where the core is the first object and the slice
+    of the image array is the second object
     '''
     import numpy as np
     from tensorflow.keras.models import load_model

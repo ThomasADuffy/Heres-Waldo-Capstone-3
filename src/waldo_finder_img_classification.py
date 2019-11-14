@@ -148,6 +148,8 @@ class WaldoFinder():
         has to be equal
         savedir = the directory where images it will be saved(Used for gif)"""
 
+        if not self.vizualization:
+            return print("Cannot run with vizualization turned off")
         p = 0
         (winW, winH) = windowsize
         for (x, y, window) in self.__sliding_window(stepSize=stepsize,
@@ -244,7 +246,7 @@ class WaldoFinder():
         modelpath = the path of the model to load to use"""
 
         if self.parallel:
-            return print('''***Cannot run Parallel model with normal function!
+            return print('''***Cannot run Parallel mode with normal function!
             please run find_waldo_parallelize!***''')
         self.model = load_model(modelpath)
         self.model_name = os.path.split(modelpath)[1].strip('.h5')
@@ -324,7 +326,7 @@ class WaldoFinder():
                         fontScale=self.scale, color=(0, 255, 0), thickness=2)
         if self.vizualization:
             print(f"Found waldo {waldos_found} times!")
-            print(f"Saving image in:{savedir+'/'+waldos_found+'waldos_'+self.img_name+'_'+self.model_name+'.jpg'}")
+            print(f"Saving image in:{savedir}/{waldos_found}waldos_{self.img_name}_{self.model_name}.jpg")
             cv2.imwrite(savedir+f'/{waldos_found}waldos_{self.img_name}_{self.model_name}.jpg', final)
             cv2.imshow('final', final)
             print('Press any key to close window')
@@ -406,10 +408,10 @@ if __name__ == "__main__":
     # # # # holdoutlst4 = ['holdout8.jpg','holdout9.jpg']
 
     # imgpath = os.path.join(IMGSpath, 'test1.jpg')
-    # waldofind = WaldoFinder(imgpath, parallel=True, flask=True, vizualization=False)
-    # # # # # waldofind.find_waldo(savedir=FOUNDWALDOpath,
-    # # # # #                      modelpath=os.path.join(MODELpath, 'model_v4.h5'),
-    # # # # #                      stepsize=32, windowsize=(64, 64))
+    # waldofind = WaldoFinder(imgpath, parallel=True, flask=False, vizualization=False)
+    # # waldofind.find_waldo(savedir=FOUNDWALDOpath+'/flask.jpg',
+    # #                      modelpath=os.path.join(MODELpath, 'model_v4.h5'),
+    # #                      stepsize=32, windowsize=(64, 64))
     # waldofind.find_waldo_parallelize(32, 64,
     #                                  os.path.join(MODELpath, 'model_v4.h5'),
-    #                                  savedir=FOUNDWALDOpath+'/flask.jpg')
+    #                                  savedir=FOUNDWALDOpath)

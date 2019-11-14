@@ -26,13 +26,13 @@ Readme WIP! Please wait!, Feel free to contact me with more information!
 
 # **How to run and utilize this app**
 to create docker container, run these commands from the root of this github repo:  
-**(Please note that this is very large(500MB) due to the tensorflow docker package being installed)**
+**(Please note that this is very large(!1.5GB) due to the tensorflow docker package being installed)**
 
 >docker image build -t waldo_finder .  
    
 >docker container run --publish 8080:8080 --name waldo waldo_finder  
   
-Then simply just go to the address listed in the terminal.(This will also work on an Could based instance like AWS EC2)
+Then simply just go to the address listed in the terminal.(This will also work on an Cloud based instance like AWS EC2)
 
 # **Contact Me!**
 <p class="lead" align="center"><font size='4'>Linked-In<br> <a href="https://www.linkedin.com/in/thomas-a-duffy/">Thomas Duffy</a><br></font><hr />
