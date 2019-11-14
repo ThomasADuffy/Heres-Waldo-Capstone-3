@@ -7,10 +7,6 @@ requests
 werkzeug
 pillow
 gevent
-scikit-learn
 scikit-image
 imutils
 opencv-python
-keras
-itertools
-functools

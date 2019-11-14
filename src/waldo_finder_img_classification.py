@@ -59,19 +59,22 @@ class WaldoFinder():
         self.img_name = os.path.split(self.imgpath)[1].strip('.jpg')
         self.flask = flask
         self.threshold = threshold
+        self.vizualization = vizualization
         if self.flask:
-            self.vizualization = False
-            print('''**Can not have vizulaization
-            within flask app currently setting vizualization to False**''')
+            if self.vizualization:
+                self.vizualization = False
+                print('''**Can not have vizulaization
+                within flask app currently setting vizualization to False**''')
         else:
             self.vizualization = vizualization
         self.num_cores = mp.cpu_count()
         self.__argcheck()
         self.parallel = parallel
         if self.vizualization:
-            self.parallel = False
-            print('''**Can not have vizulaization
-            with parallel model currently setting parallel to False**''')
+            if self.parallel:
+                self.parallel = False
+                print('''**Can not have vizulaization
+                with parallel model currently setting parallel to False**''')
 
     def __argcheck(self):
         if not isinstance(self.vizualization, bool):
@@ -99,6 +102,8 @@ class WaldoFinder():
             self.rescale_image(.8)
         elif 2000 > self.img.shape[0] >= 1700:
             self.rescale_image(.85)
+        else:
+            self.scale = 1
 
     def rescale_image(self, scale):
         ''' this will automatically rescale the image to the fraction set by
@@ -111,8 +116,8 @@ class WaldoFinder():
         w = int(self.img.shape[1] * scale)
         self.img = imutils.resize(self.img.copy(), width=w)
         self.keras_img = rescale(self.keras_img, scale,
-                                         anti_aliasing=False,
-                                         multichannel=True)
+                                 anti_aliasing=False,
+                                 multichannel=True)
         self.scale = scale
 
     def __sliding_window(self, stepSize, windowSize):
@@ -389,19 +394,21 @@ class WaldoFinder():
 
 
 if __name__ == "__main__":
-    # pass
-    # waldofind._test_sliding_window((64,64),128,resized=True,savedir=GIFpath)
-    # testinglst1 = ['test1.jpg','test2.jpg']
-    # testinglst2 = ['test3.jpg','test4.jpg']
-    # testinglst3 = ['test5.jpg','test6.jpg']
-    # holdoutlst1 = ['holdout1.jpg','holdout2.jpg','holdout3.jpg']
-    # holdoutlst2 = ['holdout4.jpg','holdout5.jpg']
-    # holdoutlst3 = ['holdout6.jpg','holdout7.jpg']
-    # holdoutlst4 = ['holdout8.jpg','holdout9.jpg']
+    pass
+    # # waldofind._test_sliding_window((64,64),128,resized=True,savedir=GIFpath)
+    # # testinglst1 = ['test1.jpg','test2.jpg']
+    # # testinglst2 = ['test3.jpg','test4.jpg']
+    # # testinglst3 = ['test5.jpg','test6.jpg']
+    # # holdoutlst1 = ['holdout1.jpg','holdout2.jpg','holdout3.jpg']
+    # # holdoutlst2 = ['holdout4.jpg','holdout5.jpg']
+    # # holdoutlst3 = ['holdout6.jpg','holdout7.jpg']
+    # # # holdoutlst4 = ['holdout8.jpg','holdout9.jpg']
 
-    imgpath = os.path.join(IMGSpath, 'test3.jpg')
-    waldofind = WaldoFinder(imgpath, parallel=True)
-    # waldofind.find_waldo(savedir=FOUNDWALDOpath,
-    #                      modelpath=os.path.join(MODELpath, 'model_v4.h5'),
-    #                      stepsize=32, windowsize=(64, 64))
-    waldofind.find_waldo_parallelize(32, 64, os.path.join(MODELpath, 'model_v4.h5'), savedir=FOUNDWALDOpath)
+    # imgpath = os.path.join(IMGSpath, 'test3.jpg')
+    # waldofind = WaldoFinder(imgpath, parallel=True, flask=True, vizualization=False)
+    # # # # waldofind.find_waldo(savedir=FOUNDWALDOpath,
+    # # # #                      modelpath=os.path.join(MODELpath, 'model_v4.h5'),
+    # # # #                      stepsize=32, windowsize=(64, 64))
+    # waldofind.find_waldo_parallelize(32, 64,
+    #                                  os.path.join(MODELpath, 'model_v4.h5'),
+    #                                  savedir=FOUNDWALDOpath+'/flask.jpg')

@@ -58,9 +58,9 @@ def parallelize_waldo_finder(winW_H, stepsize, modelpath,
     winW_H = this is the windowsize
     stepsize = this is the stepsize of the window
     model = this is the model
-    threshold = this is the threshold of probabillity to detrmine if it is Waldo
-    diffrence_formula = this is the formula of the distance between the start
-    of the array vs the end of the array
+    threshold = this is the threshold of probabillity to detrmine if it is 
+    Waldo diffrence_formula = this is the formula of the distance between
+    the start of the array vs the end of the array
     '''
     import numpy as np
     from tensorflow.keras.models import load_model
