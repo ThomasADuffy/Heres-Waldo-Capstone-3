@@ -2,7 +2,6 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
-import itertools
 
 
 def find_number_of_cores(current_num_cores, n_rows_per_core, n_total_rows):
@@ -48,8 +47,7 @@ def find_number_of_cores(current_num_cores, n_rows_per_core, n_total_rows):
 
 
 def parallelize_waldo_finder(winW_H, stepsize, modelpath,
-                             threshold, diffrence_formula, n_rows_per_core,
-                             slice_img_tup):
+                             threshold, diffrence_formula, slice_img_tup):
     '''This is the sliding window and prediction function made for the
     map function of parallel processing
 
@@ -67,17 +65,13 @@ def parallelize_waldo_finder(winW_H, stepsize, modelpath,
     import numpy as np
     from tensorflow.keras.models import load_model
     from tensorflow.keras.preprocessing.image import ImageDataGenerator
-    from skimage import io, color, filters
-    from skimage.transform import rescale, resize
 
     model = load_model(modelpath)
     cordlist = []
     problist = []
     waldos_found = 0
-    window_cords = cord_maker(stepsize, winW_H, n_rows_per_core, slice_img_tup[1])
-    for coordinate in window_cords:
-        y = coordinate[0]
-        x = coordinate[1]
+    window_cords = cord_maker(stepsize, slice_img_tup[1])
+    for y, x in window_cords:
         window = slice_img_tup[1][y:(y + winW_H), x:(x + winW_H)]
         if window.shape[0] != winW_H or window.shape[1] != winW_H:
             continue
@@ -95,24 +89,22 @@ def parallelize_waldo_finder(winW_H, stepsize, modelpath,
     return [cordlist, problist, waldos_found]
 
 
-def cord_maker(stepsize, winW_H, n_rows_per_core, slice_img):
+def cord_maker(stepsize, slice_img):
     ''' This is make a list of all the possible cordinates for the windows,
     this was to cut down time even more.
 
     Arguments:
 
-    winW_H = this is the windowsize
     stepsize = this is the stepsize of the window
-    n_rows_per_core = this is the number of rows per core
-    slice_img = this is the sliced image to get the shape of the array for
-    calculating the x coords.
+    slice_img = this is the sliced image to get the shape of the array
     '''
-    import itertools
-    n_x_rows = int((slice_img.shape[1]-winW_H)/stepsize)
-    y = [i*stepsize for i in range(0, n_rows_per_core)]
-    x = [i*stepsize for i in range(0, n_x_rows)]
 
-    return [(r[0], r[1]) for r in itertools.product(y, x)]
+    import numpy as np
+    y, x, _ = slice_img.shape
+    y = np.arange(0, y, 32)
+    x = np.arange(0, x, 32)
+
+    return np.array(np.meshgrid(y, x)).T.reshape(-1, 2)
 
 
 if __name__ == "__main__":

@@ -370,7 +370,7 @@ class WaldoFinder():
             parallel_array.append([core, slice_img])
         waldo_func = partial(parallelize_waldo_finder, winW_H, stepsize,
                              modelpath, self.threshold,
-                             diffrence_formula, n_rows_per_core)
+                             diffrence_formula)
         results = cpu_pool.map(waldo_func, parallel_array)
         cpu_pool.close()
         cpu_pool.join()
