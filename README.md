@@ -13,6 +13,7 @@ Utilizing Computer vision (Open CV) and a CNN to find waldo
 - [**Results of Model**](#results-of-model)
 - [**Multicore Processing**](#multicore-processing)
 - [**Flask Application**](#flask-application)
+- [**Capstone Poster**](#capstone-poster)
 - [**How to run and utilize this app**](#how-to-run-and-utilize-this-app)
 - [**Contact Me!**](#contact-me)
 - [**Readme Images and Data Credits/Sources**](#readme-images-and-data-creditssources)
@@ -83,10 +84,10 @@ Test<br>
 <img src="/imgs/model_results/test/30_waldos_test2_model_v4.jpg"><br>
 <img src="/imgs/model_results/test/14_waldos_test5_model_v4.jpg"><br>
 Holdout<br>
-<img src="/imgs/model_results/best_model/23_waldos_holdout1_model_v4.jpg"><br>
-<img src="/imgs/model_results/best_model/29_waldos_holdout3_model_v4.jpg"><br>
-<img src="/imgs/model_results/best_model/35_waldos_holdout8_model_v4.jpg"><br>
-<img src="/imgs/model_results/best_model/3_waldos_holdout7_model_v4.jpg"><br>
+<img src="/imgs/model_results/best_model/holdout/23_waldos_holdout1_model_v4.jpg"><br>
+<img src="/imgs/model_results/best_model/holdout/29_waldos_holdout3_model_v4.jpg"><br>
+<img src="/imgs/model_results/best_model/holdout/35_waldos_holdout8_model_v4.jpg"><br>
+<img src="/imgs/model_results/best_model/holdout/3_waldos_holdout7_model_v4.jpg"><br>
 </p>
 
 As you can see the model performed much better than the previous models but it still had an optimization problem. This process would take around 3-5 minutes depending on the size of the image and was way too slow to be functional so I ended up using multiprocessing.
@@ -131,6 +132,13 @@ Contact Me Page<br>
 
 Feel free to download and utilize this app also!!!
 
+# **Capstone Poster**
+Below is the poster I created for a showcase:
+<p align="center">
+<img src="/imgs/readme_imgs/poster/poster_converted.jpg" width="1500"><br>
+</p>
+
+You can see a pdf version [here.](https://github.com/ThomasADuffy/Heres-Waldo-Capstone-3/imgs/readme_imgs/poster/Thomas_Duffy-Waldo-Poster-final.pdf)
 
 # **How to run and utilize this app**
 
