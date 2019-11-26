@@ -398,20 +398,20 @@ class WaldoFinder():
 
 if __name__ == "__main__":
     pass
-    # # # waldofind._test_sliding_window((64,64),128,resized=True,savedir=GIFpath)
-    # # # testinglst1 = ['test1.jpg','test2.jpg']
-    # # # testinglst2 = ['test3.jpg','test4.jpg']
-    # # # testinglst3 = ['test5.jpg','test6.jpg']
-    # # # holdoutlst1 = ['holdout1.jpg','holdout2.jpg','holdout3.jpg']
-    # # # holdoutlst2 = ['holdout4.jpg','holdout5.jpg']
-    # # # holdoutlst3 = ['holdout6.jpg','holdout7.jpg']
-    # # # # holdoutlst4 = ['holdout8.jpg','holdout9.jpg']
+    # waldofind._test_sliding_window((64,64),128,resized=True,savedir=GIFpath)
+    # testinglst1 = ['test1.jpg','test2.jpg']
+    # testinglst2 = ['test3.jpg','test4.jpg']
+    # testinglst3 = ['test5.jpg','test6.jpg']
+    # holdoutlst1 = ['holdout1.jpg','holdout2.jpg','holdout3.jpg']
+    # holdoutlst2 = ['holdout4.jpg','holdout5.jpg']
+    # holdoutlst3 = ['holdout6.jpg','holdout7.jpg']
+    # holdoutlst4 = ['holdout8.jpg','holdout9.jpg']
 
     # imgpath = os.path.join(IMGSpath, 'test1.jpg')
     # waldofind = WaldoFinder(imgpath, parallel=True, flask=False, vizualization=False)
-    # # waldofind.find_waldo(savedir=FOUNDWALDOpath+'/flask.jpg',
-    # #                      modelpath=os.path.join(MODELpath, 'model_v4.h5'),
-    # #                      stepsize=32, windowsize=(64, 64))
+    # waldofind.find_waldo(savedir=FOUNDWALDOpath+'/flask.jpg',
+    #                      modelpath=os.path.join(MODELpath, 'model_v4.h5'),
+    #                      stepsize=32, windowsize=(64, 64))
     # waldofind.find_waldo_parallelize(32, 64,
     #                                  os.path.join(MODELpath, 'model_v4.h5'),
     #                                  savedir=FOUNDWALDOpath)
