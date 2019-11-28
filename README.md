@@ -2,7 +2,7 @@
 Utilizing Computer vision (Open CV) and a CNN to find waldo
 
 <p align="center"> 
-<img src="/imgs/shining_waldo.jpg">
+<img src="/imgs/shining_waldo.png">
 </p>
 
 # **Table of Contents** <!-- omit in toc -->
